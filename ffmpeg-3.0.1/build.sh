@@ -17,17 +17,21 @@ cd ${THISDIR}/${MODULE_SRCPATH}
 
 echo "configure ..."
 ./configure --prefix=`pwd`/../tmp-bin/	\
-	--enable-shared	\
+	--disable-static	\
+	--enable-shared		\
+	--enable-memalign-hack	\
 	--disable-programs	\
 	--disable-doc	\
 	--disable-avdevice	\
 	--disable-swresample	\
 	--disable-swscale 	\
 	--disable-postproc	\
+	--disable-avfilter	\
 	--disable-network	\
 	--disable-everything	\
 	--enable-decoder=h264	\
 	--enable-demuxer=avi	\
+	--enable-protocol=file	\
 	--disable-asm
 
 echo "making ..."
