@@ -62,6 +62,8 @@ cp -dprf tmp-bin/include/* include/
 cp -f tmp-bin/bin/*.dll lib/${BUILD_PLATFORM}/
 cp -f tmp-bin/bin/*.lib lib/${BUILD_PLATFORM}/
 cp -f tmp-bin/lib/*.a lib/${BUILD_PLATFORM}/
-cp -f tmp-bin/lib/*.so lib/${BUILD_PLATFORM}/
+cp -f tmp-bin/lib/libavformat.so.57 lib/${BUILD_PLATFORM}/
+cp -f tmp-bin/lib/libavcodec.so.57 lib/${BUILD_PLATFORM}/
+cp -f tmp-bin/lib/libavutil.so.55 lib/${BUILD_PLATFORM}/
 
 

@@ -43,6 +43,6 @@ cp -dprf tmp-bin/include/freetype2/* include/
 #cp -f tmp-bin/bin/*.dll lib/${BUILD_PLATFORM}/
 #cp -f tmp-bin/bin/*.lib lib/${BUILD_PLATFORM}/
 #cp -f tmp-bin/lib/*.a lib/${BUILD_PLATFORM}/
-cp -f tmp-bin/lib/*.so lib/${BUILD_PLATFORM}/
+cp -f tmp-bin/lib/libfreetype.so.6 lib/${BUILD_PLATFORM}/
 
 
