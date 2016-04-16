@@ -1,5 +1,5 @@
 
-BUILD_PLATFORM=mingw32
+BUILD_PLATFORM=linux64
 
 THISDIR=`dirname $0`
 
@@ -22,6 +22,10 @@ fi
 
 cd ${THISDIR}/${MODULE_SRCPATH}
 
+if [ x"${BUILD_PLATFORM}" = x"mingw32" ]; then
+	PLATFORM_OPTIONS=--disable-asm
+fi 
+
 echo "-------------------------------"
 echo "configure ..."
 ./configure --prefix=`pwd`/../tmp-bin/	\
@@ -40,7 +44,7 @@ echo "configure ..."
 	--enable-decoder=h264	\
 	--enable-demuxer=avi	\
 	--enable-protocol=file	\
-	--disable-asm
+	${PLATFORM_OPTIONS}
 
 echo "-------------------------------"
 echo "making ..."
@@ -54,9 +58,10 @@ echo "install platform files ..."
 
 mkdir -p include
 mkdir -p lib/${BUILD_PLATFORM}
-cp -dpr tmp-bin/include/* include/
-cp tmp-bin/bin/*.dll lib/${BUILD_PLATFORM}/
-cp tmp-bin/bin/*.lib lib/${BUILD_PLATFORM}/
-cp tmp-bin/lib/*.a lib/${BUILD_PLATFORM}/
+cp -dprf tmp-bin/include/* include/
+cp -f tmp-bin/bin/*.dll lib/${BUILD_PLATFORM}/
+cp -f tmp-bin/bin/*.lib lib/${BUILD_PLATFORM}/
+cp -f tmp-bin/lib/*.a lib/${BUILD_PLATFORM}/
+cp -f tmp-bin/lib/*.so lib/${BUILD_PLATFORM}/
 
 
