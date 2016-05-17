@@ -5,7 +5,7 @@ include ../../../xbuild/toolchain/$(TOOLCHAIN).mk
 
 
 STATICLIB := libsqlite.a
-SHAREDLIB := libsqlite.so
+#SHAREDLIB := libsqlite.so
 OBJS      := sqlite3.o
 
 CFLAGS   := $(RELEASE_CFLAGS)

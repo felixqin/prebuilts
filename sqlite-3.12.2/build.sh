@@ -1,5 +1,5 @@
 
-BUILD_PLATFORM=mingw32
+BUILD_PLATFORM=x64
 
 THISDIR=`dirname $0`
 
