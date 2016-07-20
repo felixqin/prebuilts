@@ -1,5 +1,5 @@
 
-BUILD_PLATFORM=x64
+BUILD_PLATFORM=hisiv300
 
 THISDIR=`dirname $0`
 
