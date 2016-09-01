@@ -1,5 +1,5 @@
 
-BUILD_PLATFORM=hisiv300
+BUILD_PLATFORM=android15armeabiv7aneon
 
 THISDIR=`dirname $0`
 cd ${THISDIR}
@@ -24,12 +24,14 @@ if [ ! -d ${MODULE_SRCPATH} ]; then
 fi
 
 rm -fr build-cmake
+mkdir -p build-cmake
 cd build-cmake
 echo "-------------------------------"
 echo "making ..."
 export MODULE_SRCPATH
-cmake -DCMAKE_TOOLCHAIN_FILE=${TOPDIR}/xbuild/cmake/android15armeabiv7aneon.toolchain.cmake ..
+cmake -DCMAKE_TOOLCHAIN_FILE=${TOPDIR}/xbuild/cmake/${BUILD_PLATFORM}.toolchain.cmake ..
 make || exit 1
+exit 0
 
 echo "-------------------------------"
 cd ..
@@ -39,7 +41,7 @@ mkdir -p include/sqlite
 mkdir -p lib/${BUILD_PLATFORM}
 cp ${MODULE_SRCPATH}/sqlite3.h include/sqlite
 cp ${MODULE_SRCPATH}/sqlite3ext.h include/sqlite
-cp ${MODULE_SRCPATH}/*.a lib/${BUILD_PLATFORM}/
-cp ${MODULE_SRCPATH}/*.so lib/${BUILD_PLATFORM}/
+#cp ${MODULE_SRCPATH}/*.a lib/${BUILD_PLATFORM}/
+#cp ${MODULE_SRCPATH}/*.so lib/${BUILD_PLATFORM}/
 
 rm -fr ${MODULE_SRCPATH}
