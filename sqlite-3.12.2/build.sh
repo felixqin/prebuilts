@@ -2,12 +2,14 @@
 BUILD_PLATFORM=hisiv300
 
 THISDIR=`dirname $0`
+cd ${THISDIR}
+
+TOPDIR=`pwd`/../../
 
 source ${THISDIR}/module.env
 
 
 echo "build start ..."
-cd ${THISDIR}
 
 echo "-------------------------------"
 if [ ! -f ${MODULE_PACKAGE} ]; then
@@ -21,12 +23,13 @@ if [ ! -d ${MODULE_SRCPATH} ]; then
 	unzip ${MODULE_PACKAGE}
 fi
 
-cd ${MODULE_SRCPATH}
-
+rm -fr build-cmake
+cd build-cmake
 echo "-------------------------------"
 echo "making ..."
-cp ../Makefile ./
-make TOOLCHAIN=${BUILD_PLATFORM} || exit 1
+export MODULE_SRCPATH
+cmake -DCMAKE_TOOLCHAIN_FILE=${TOPDIR}/xbuild/cmake/android15armeabiv7aneon.toolchain.cmake ..
+make || exit 1
 
 echo "-------------------------------"
 cd ..
