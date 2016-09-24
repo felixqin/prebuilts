@@ -1,5 +1,5 @@
 
-BUILD_PLATFORM=linux64
+BUILD_PLATFORM=android15armeabiv7aneon
 
 THISDIR=`dirname $0`
 
@@ -42,7 +42,7 @@ mkdir -p lib/${BUILD_PLATFORM}
 cp -dprf tmp-bin/include/freetype2/* include/
 #cp -f tmp-bin/bin/*.dll lib/${BUILD_PLATFORM}/
 #cp -f tmp-bin/bin/*.lib lib/${BUILD_PLATFORM}/
-#cp -f tmp-bin/lib/*.a lib/${BUILD_PLATFORM}/
-cp -f tmp-bin/lib/libfreetype.so.6 lib/${BUILD_PLATFORM}/
+cp -f tmp-bin/lib/*.a lib/${BUILD_PLATFORM}/
+#cp -f tmp-bin/lib/libfreetype.so.6 lib/${BUILD_PLATFORM}/
 
 
