@@ -1,5 +1,6 @@
 #ifndef _SDK_DM_INTERFACE_H
 #define _SDK_DM_INTERFACE_H
+
 /*
 #ifdef	DM_SDK_EXPORTS 
 	#define DM_SDK_API _declspec(dllexport) //__stdcall
@@ -59,16 +60,6 @@ typedef struct tagTempHandle
 	int len;
 }_tagTempHandle;
 
-//屏蔽区域结构体
-typedef struct tagShieldRegion
-{
-	int Index;
-	bool Enable;
-	int StartX;
-	int StartY;
-	int EndX;
-	int EndY;
-}_tagShieldRegion;
 
 //2012-01-22 add, 回调函数方式上传温度信息时使用该结构
 typedef struct tagTempMessage
@@ -77,7 +68,7 @@ typedef struct tagTempMessage
 	int len;//temperInfo的个数
 	char dvrIP[16];
 	tagTemperature  temperInfo[10];
-}_tagTempMessage;
+}_tagTempMessagee;
 
 typedef struct tagAlarm {
 	int AlarmID;
@@ -119,11 +110,6 @@ struct tagResolutionInfo
 	int height;
 };
 
-typedef struct 
-{
-	WORD PresetIndex;		//预置位编号
-	char PresetName[10];		//预置位名称
-}PRESET_DM60,  *LPPRESET_DM60 ;
 
 ///Error ID
 #define DM_SUCCESS						 0x00000000
@@ -197,40 +183,16 @@ typedef struct
 //原始数据采集结束通知消息
 #define WM_CAPTUREINFRA_OVER			(WM_APP + 0x3055)
 
-//告警图片采集结束通知消息
-#define WM_ALARMJPEG_OVER			(WM_APP + 0x3056)
-
-//执行 DM_OpenMonitor 成功后返回的监视消息
 #define WM_DM_PLAYER				(WM_APP + 0x3061)	///> Video handle(//2010-09-07 add,openmonitor调用成功发该消息）
 
 
 extern "C"   //以c编译器编译
-
-
-#define		INFRA_DATA	0	//红外原始数据
-#define		INFRA_PARA	 1 //红外参数
-#define		INFRA_DATA_HEADER	2	//数据头,对应结构DLVParagraph
-#define		INFRA_PARA_HEADER	 3 //文件头,对应结构DLVFileHeader
-
-//DLV 文件头
-struct DLVFileHeader
 {
-    int   nFileVer; //3
-    int   nFrameTime;
-    int   nWidth;  //edit by duke 2009.10.21 type error
-    int   nHeight;
-};
 
-//帧头格式：
-struct DLVParagraph
-{
-    unsigned int SyncFlag;        //0x66DDDD66
-    unsigned int nTime;           //当前时间
-    unsigned int nPriorLength;    //上一帧长度
-    unsigned int nType;           //帧类型
-    unsigned int nCurrentLength;  //本帧长度
-};
-typedef void(CALLBACK *fInfraDataCallBack) (long lHandle, unsigned long dwDataType, unsigned char *pBuffer, unsigned long dwBufSize);
+//add by ludc 2012-02-08
+BOOL  __stdcall DM_SetTemperatureScope(int handle,  int dwValue1, int dwValue2);
+BOOL  __stdcall DM_GetTemperatureScope(int handle,  int* dwValue1, int* dwValue2);
+
 
 /****************************************************************************************************************/
 /* 网络设置和操作																								*/
@@ -256,156 +218,12 @@ void __stdcall DM_Init();
 int __stdcall DM_Connect(HWND hwnd, char *IPAddr, int Port);
 
 /*
- 函数名称:	DM_ConnectWithName
-*函数说明:	连接DM60仪器
-*输入参数:  hwnd：		消息处理窗口句柄
-			IPAddr：	仪器IP地址
-			Port：		命令端口（默认端口80）
-			UserName:	登陆用户名
-			Password:	登陆密码
-  *返回值:  > 0 连接到仪器后的操作句柄,用DM_Disconnect 释放。
-		    <= 0 连接失败			
-*/
-int __stdcall DM_ConnectWithName(HWND hwnd, char *IPAddr, int Port, char *UserName, char *Password);
-
-/*
  函数名称:	DM_Disconnect
 *函数说明:	断开连接
 *输入参数:  handle：句柄
-*返回值:  >= 0： 正确；< 0： 错误			
+*返回值:  1： 正确；0： 错误			
 */
 int __stdcall DM_Disconnect(int handle);
-
-/*
- 函数名称:	DM_SetIsotherm
-*函数说明:	设置等温区域
-			仅对 DM6x 二期或以后的有效, 更早的型号只支持1个等温区域, 分别用 DM_SetISOColor、DM_SetISOTemp 和 DM_SetISOHight
-*输入参数:  handle：		句柄
-			iIndex： 		等温编号, 支持3个等温区域（0 - 2之间）
-			iColorID:		等温色序号,  见颜色索引号, 0表示关闭
-			iIsoTemp：		等温区域中点温度 * 100
-			iHightTemp:		等温区域温度范围 * 100
-*返回值:	>0 成功, <0失败			
-*/
-int __stdcall DM_SetIsotherm(int handle, int iIndex, int iColorID, int iIsoTemp, int iHightTemp);
-
-/*
- 函数名称:	DM_GetIsotherm
-*函数说明:	获得等温区域信息
-			仅对 DM6x 二期或以后的有效, 更早的型号只支持1个等温区域, 分别用 DM_GetISOColor、 DM_GetISOTemp 和 DM_GetISOHight
-*输入参数:  handle：		句柄
-			iIndex： 		等温编号, 支持3个等温区域（0 - 2之间）
-*返回值:			
-			iColorID:		等温色序号,  见颜色索引号, 0表示关闭
-			iIsoTemp：		等温区域中点温度 * 100
-			iHightTemp:		等温区域温度范围 * 100
-*/
-int __stdcall DM_GetIsotherm(int handle, int iIndex, int *iColorID, int *iIsoTemp, int *iHightTemp);
-
-/*
- 函数名称:	DM_SetAlarmInfo
-*函数说明: 报警温度设置
-			仅对 DM6x 二期或以后的有效
-*输入参数:  handle：		句柄
-			Type:			测温目标类型，0：点，1：线，2：矩形区域
-			Index:			测温目标序号，每种测温目标类型的序号都是从1开始的，区域9为全屏最热点，区域10为全屏最冷点
-			AlarmPower:		报警开关，0：关闭，1：打开
-			AlarmType:		报警触发方式，0：大于报警温度触发，1：小于报警温度触发
-			AlarmTemp：		报警温度 * 100
-			AlarmColorID:	报警颜色序号，见颜色索引号, 0表示不显示报警色
-			AlarmMessageType:	报警联动开关，0：不联动，1：联动方式1，2：联动方式2
-*返回值:
-*注：
-*/
-void __stdcall DM_SetAlarmInfo(int handle, int Type, int Index, int AlarmPower, int AlarmType, int AlarmTemp, int AlarmColorID, int AlarmMessageType);
-
-/*
- 函数名称:	DM_GetAlarmInfo
-*函数说明:  获取当前仪器的报警温度
-			仅对 DM6x 二期或以后的有效
-*输入参数:  handle：		句柄
-			Type:			测温目标类型，0：点，1：线，2：矩形区域
-			Index:			测温目标序号，每种测温目标类型的序号都是从1开始的，区域9为全屏最热点，区域10为全屏最冷点
-*输出参数:	
-			AlarmPower:		报警开关，0：关闭，1：打开
-			AlarmType:		报警触发方式，0：大于报警温度触发，1：小于报警温度触发
-			AlarmTemp：		报警温度 * 100
-			AlarmColorID:	报警颜色序号，见颜色索引号, 0表示不显示报警色
-			AlarmMessageType:	报警联动开关，0：不联动，1：联动方式1，2：联动方式2
-*注：	
-*/
-int __stdcall DM_GetAlarmInfo(int handle, int Type, int Index, int *AlarmPower, int *AlarmType, int *AlarmTemp, int *AlarmColorID, int *AlarmMessageType);
-
-/*
- 函数名称:	DM_SetPreset
-*函数说明:	将镜头当前位置设置为 1 个预置点
-			仅对 DM6x 二期或以后的有效
-*输入参数:  handle：		句柄
-			iIndex： 		预置点编号, 支持128个预置点（0 - 127之间）
-			cPresetName:	预置点名称, 最长10个字符
-*返回值:	>0 成功, <0失败		
-*/
-int __stdcall DM_SetPreset(int handle, int iIndex, char *cPresetName);
-
-/*
- 函数名称:	DM_CallPreset
-*函数说明:	将镜头调焦到某预置点
-			仅对 DM6x 二期或以后的有效
-*输入参数:  handle：		句柄
-			iIndex： 		预置点编号, 支持128个预置点（0 - 127之间）
-*返回值:	>0 成功, <0失败		
-*/
-int __stdcall DM_CallPreset(int handle, int iIndex);
-
-/*
- 函数名称:	DM_ResetPresetName
-*函数说明:	重命名某个预置点
-			仅对 DM6x 二期或以后的有效
-*输入参数:  handle：		句柄
-			iIndex： 		预置点编号, 支持128个预置点（0 - 127之间）
-			cPresetName:	预置点的新名称, 最长10个字符
-*返回值:	>0 成功, <0失败		
-*/
-int __stdcall DM_ResetPresetName(int handle, int iIndex, char *cPresetName);
-
-/*
- 函数名称:	DM_GetAllPreset
-*函数说明:	获得所有镜头预置点的信息
-			仅对 DM6x 二期或以后的有效
-*输入参数:  handle：		句柄
-			pPreset: 		预置点数组(0 ~ 127)
-*返回值:	>0 成功, <0失败		
-*/
-int __stdcall DM_GetAllPreset(int handle, PRESET_DM60 pPreset[]);
-
-/*
- 函数名称:	DM_DeletePreset
-*函数说明:	删除镜头预置点
-			仅对 DM6x 二期或以后的有效
-*输入参数:  handle：		句柄
-			iIndex： 		预置点编号, 支持128个预置点（0 - 127之间）, -1表示全部删除
-*返回值:	>0 成功, <0失败		
-*/
-int __stdcall DM_DeletePreset(int handle, int iIndex);
-
-/*
- 函数名称:	DM_GetPos
-*函数说明:	获得镜头当前位置值
-			仅对 DM6x 二期或以后的有效
-*输入参数:  handle：		句柄
-
-*返回值:	>-2000 成功, <=-2000失败		
-*/
-int __stdcall DM_GetPos(int handle);
-
-/*
- 函数名称:	DM_CallPos
-*函数说明:	将镜头调焦到某位置
-			仅对 DM6x 二期或以后的有效
-*输入参数:  handle：		句柄
-*返回值:	>0 成功, <0失败		
-*/
-int __stdcall DM_CallPos(int handle, int iPos);
 
 /****************************************************************************************************************/
 /* 测温对象的获取与设置                                                                                         */
@@ -427,12 +245,12 @@ void  __stdcall DM_SetSpot(int handle,int iPoint,int x,int y, int Emiss = 90);
  函数名称:	DM_SetLine
 *函数说明:	设置测温线
 *输入参数:  handle：	句柄
-			iLine：	线编号, 目前支持一条线测温, 固定值 1
+			iLine：	线编号，目前支持一条线测温，固定值 1
 			x1,y1：	起始点坐标 	(0,0  ---  319 * 239)；
 			x2,y2：	结束点坐标 	(0,0  ---  319 * 239)
-			x3,y3：	线上测温点, 由用户指定的测温点
-			lineType,测温线类型, //0-Hori; 1-Vert; 2-Slash
-			mode, 测温模式,  0-High/1-Low/2-Avg
+			x3,y3：	线上测温点，由用户指定的测温点
+			lineType,测温线类型，//0-Hori; 1-Vert; 2-Slash
+			mode，测温模式， 0-High/1-Low/2-Avg
 			Emiss：	比幅射率  		（0 - 100）一般在10 -- 100之间
 
 *返回值:			
@@ -510,7 +328,7 @@ void  __stdcall DM_ClearAllArea(int handle);
 *输入参数:  handle：		句柄
 			SpotID：		点编号(1--n)
 			Mode：			0：返回一次温度
-							1：连续返回温度, 间隔时间由仪器自动调节
+							1：连续返回温度，间隔时间由仪器自动调节
 *返回值:			
 */
 void __stdcall  DM_GetSpotTemp(int handle,int SpotID=1,int Mode = 0);
@@ -521,7 +339,7 @@ void __stdcall  DM_GetSpotTemp(int handle,int SpotID=1,int Mode = 0);
 *输入参数:  handle：		句柄
 			LineID：		线编号 (1 -- n)
 			Mode：			0：返回一次温度
-							1：连续返回温度, 间隔时间由仪器自动调节
+							1：连续返回温度，间隔时间由仪器自动调节
 *返回值:			
 */
 void __stdcall  DM_GetLineTemp(int handle,int LineID = 1,int Mode = 0);
@@ -532,7 +350,7 @@ void __stdcall  DM_GetLineTemp(int handle,int LineID = 1,int Mode = 0);
 *输入参数:  handle：		句柄
 			AreaID：		区域编号(1-- n)
 			Mode：			0：返回一次温度
-							1：连续返回温度, 间隔时间由仪器自动调节。
+							1：连续返回温度，间隔时间由仪器自动调节。
 
 *返回值:			
 */
@@ -543,7 +361,7 @@ void __stdcall  DM_GetAreaTemp(int handle,int AreaID = 1,int Mode = 0);
 *函数说明:	获取所有测温目标的测温结果
 *输入参数:  handle：		句柄
 			Mode：			0：返回一次温度
-							1：连续返回温度, 间隔时间由仪器自动调节。
+							1：连续返回温度，间隔时间由仪器自动调节。
 *返回值:			
 */
 void  __stdcall DM_GetTemp (int handle,int Mode);
@@ -572,76 +390,23 @@ int __stdcall  DM_GetTempParam (int handle,int Type,int Number);
 /****************************************************************************************************************/
 /*
  函数名称:	DM_CaptureInfraredFrame
-*函数说明:	开始原始数据采集, 返回结果在消息 WM_DM_CAPTURE_FRAME 和 WM_CAPTUREINFRA_OVER 中处理
+*函数说明:	开始原始数据采集，返回结果在消息WM_DM_CAPTURE_FRAME（3.1.2）中处理
 *输入参数:  handle：	句柄
-			Path： 		保存文件的路径或文件名。如果是路径, 则系统以时间作文件名保存在此路径下；如果是文件名, 则系统直接以输入的文件名保存。
+			Path： 		保存文件的路径或文件名。如果是路径，则系统以时间作文件名保存在此路径下；如果是文件名，则系统直接以输入的文件名保存。
 			Frame： 	帧数
-			Time：		帧与帧之间的间隔时间(ms) >= 20ms, 且必须是20的倍数。
+			Time：		帧与帧之间的间隔时间(ms) >= 20ms，且必须是20的倍数。
 			注意：Frame * Time <= 8秒
-*返回值:  采集句柄，用于消息 WM_DM_CAPTURE_FRAME 和 WM_CAPTUREINFRA_OVER 的处理
+*返回值:			
 */
 int __stdcall  DM_CaptureInfraredFrame(int handle, char *Path,int Frame,int Time);
 
 /*
  函数名称:	DM_CaptureInfraredFrameStop
 *函数说明:	停止原始数据采集
-*输入参数:  handle		句柄,DM_Connect()函数的返回值
+*输入参数:  handle		句柄,DM_CaptureInfraredFrame()函数的返回值
 *返回值:			
 */
 int  __stdcall DM_CaptureInfraredFrameStop(int handle);
-
-/*
- 函数名称:	DM_RecvInfraredData
-*函数说明:  打开红外原始数据的回调
-*输入参数:  handle, 句柄
-*			InfraDataCallback, 回调函数		
-*输出参数:  无
-*返回值:正数表示成功, 负数表示失败	
-*/
-long __stdcall DM_RecvInfraredData(LONG handle, fInfraDataCallBack InfraDataCallback);
-
-/*
- 函数名称:	DM_RecvInfraredData_EX
-*函数说明:  打开红外原始数据的回调
-*输入参数:  handle, 句柄
-*			Frame, 采集的总帧数
-*			Time,两帧的时间间隔, 单位毫秒
-*			InfraDataCallback, 回调函数		
-*输出参数:  无
-*返回值:正数表示成功, 负数表示失败	
-*/
-LONG __stdcall DM_RecvInfraredData_EX(LONG handle, int Frame,int Time, fInfraDataCallBack InfraDataCallback);
-
-/*
- 函数名称:	DM_StopRecvInfraredData
-*函数说明:  停止红外原始数据的回调
-*输入参数:  lRealHandle, 句柄, 即DM_RecvInfraredData()或DM_RecvInfraredData_EX()的返回值	
-*输出参数:  
-*返回值:TRUE表示成功, FALSE表示失败	
-*/
-int __stdcall DM_StopRecvInfraredData(long lRealHandle);
-
-/****************************************************************************************************************/
-/*
- 函数名称:	DM_CaptureInfraredFromStream, 需要先执行 DM_RecvInfrareData_EX
-*函数说明:	开始原始数据采集, 返回结果在消息 WM_DM_CAPTURE_FRAME 和 WM_CAPTUREINFRA_OVER 中处理
-*输入参数:  handle：	DM_RecvInfraredData_EX 返回的句柄
-			Path： 		保存文件的路径或文件名。如果是路径, 则系统以时间作文件名保存在此路径下；如果是文件名, 则系统直接以输入的文件名保存。
-			Frame： 	帧数
-			Interval：	每几帧取一帧
-			
-*返回值:  >=0 成功，<0失败
-*/
-int __stdcall  DM_CaptureInfraredFromStream(int handle, char *Path, int Frame, int Interval);
-
-/*
- 函数名称:	DM_CaptureInfraredFromStreamStop
-*函数说明:  停止从内存中保存红外原始数据
-*输入参数:  lRealHandle, 句柄, 即DM_RecvInfraredData()或DM_RecvInfraredData_EX()的返回值	
-*输出参数:  
-*返回值:TRUE表示成功, FALSE表示失败	
-*/
-int __stdcall DM_CaptureInfraredFromStreamStop(long lRealHandle);
 
 /******************************************************************************************************************/
 /* 图像设置                                                                                                       */
@@ -683,27 +448,10 @@ void  __stdcall DM_SetVideoOutType(int handle, VIDEO_OUT_TYPE VideoOutType);
 int  __stdcall DM_GetVideoOutType(int handle);
 
 /*
- 函数名称:	DM_SetUpdateMeaTemp
-*函数说明:	设置仪器测温结果的返回速度
-*输入参数:  handle：			句柄
-			Freq  1~100, 表示每秒1~100次, 实际有效值要看仪器的反应速度
-*返回值:			
-*/
-void  __stdcall DM_SetUpdateMeaTemp(int handle, int Freq);
-
-/*
- 函数名称:	DM_GetUpdateMeaTemp
-*函数说明:	获取仪器测温结果的返回速度
-*输入参数:  handle：			句柄
-*返回值:	速度, 单位为 次/秒		
-*/
-int  __stdcall DM_GetUpdateMeaTemp(int handle);
-
-/*
  函数名称:	DM_SetVideoMode
 *函数说明:	图像手动/自动模式切换
 *输入参数:  handle：		句柄
-			Mode：			模式(0、手动, 2、自动)
+			Mode：			模式(0、手动，2、自动)
 *返回值:		
 */
 void __stdcall  DM_SetVideoMode(int handle,int Mode);
@@ -718,7 +466,7 @@ void  __stdcall DM_AutoFocus(int handle);
 
 /*
  函数名称:	DM_FocusFar
-*函数说明:	红外调焦, 拉远
+*函数说明:	红外调焦，拉远
 *输入参数:  handle：		句柄
 			Step： 		步长
 *返回值:		
@@ -727,7 +475,7 @@ void  __stdcall DM_FocusFar(int handle,int step = 1);
 
 /*
  函数名称:	DM_FocusNear
-*函数说明:		红外调焦, 拉近
+*函数说明:		红外调焦，拉近
 *输入参数:  handle：		句柄
 			Step： 		步长
 *返回值:		
@@ -736,7 +484,7 @@ void __stdcall  DM_FocusNear(int handle,int step = 1);
 
 /*
  函数名称:	DM_StopFocus
-*函数说明:	仪器停止调焦, 在使用DM_DurativeNear, DM_DurativeFar后有效
+*函数说明:	仪器停止调焦，在使用DM_DurativeNear，DM_DurativeFar后有效
 *输入参数:  handle：		句柄
 *返回值:		
 */
@@ -744,7 +492,7 @@ void __stdcall  DM_StopFocus(int handle);
 
 /*
  函数名称:	DM_DurativeNear
-*函数说明:	仪器调焦,持续拉近, 直到调用DM_StopFocus停止调焦
+*函数说明:	仪器调焦,持续拉近，直到调用DM_StopFocus停止调焦
 *输入参数:  handle：		句柄
 *返回值:		
 */
@@ -752,7 +500,7 @@ void  __stdcall DM_DurativeNear (int handle);
 
 /*
  函数名称:	DM_DurativeFar
-*函数说明:	仪器调焦, 持续拉远, 直到调用DM_StopFocus停止调焦
+*函数说明:	仪器调焦，持续拉远，直到调用DM_StopFocus停止调焦
 *输入参数:  handle：		句柄
 *返回值:		
 */
@@ -760,7 +508,7 @@ void __stdcall DM_DurativeFar (int handle);
 
 /*
  函数名称:	DM_ShowTempValueOnImage
-*函数说明:	打开测温状态, 仪器上是否显示测温数据
+*函数说明:	打开测温状态，仪器上是否显示测温数据
 *输入参数:  handle：		句柄
 			bEnable：		0： 隐藏 1、显示
 *返回值:		
@@ -778,7 +526,7 @@ int __stdcall DM_GetTempValueOnImageStatus(int handle);
 
 /*
  函数名称:	DM_SetISOTemp
-*函数说明:	设置仪器的等温温度值, 在测温时需要使用
+*函数说明:	设置仪器的等温温度值，在测温时需要使用
 *输入参数:  handle：		句柄
 			ThermTemp：		温度 * 100
 *返回值:	
@@ -795,7 +543,7 @@ int __stdcall DM_GetISOTemp(int handle);
 
 /*
  函数名称:	DM_SetISOHight
-*函数说明:	设置等温高度（等温色的温度范围）, 在测温时使
+*函数说明:	设置等温高度（等温色的温度范围），在测温时使
 *输入参数:  handle：			句柄
 			ThermHight：		高度*100
 
@@ -816,7 +564,7 @@ int __stdcall DM_GetISOHight(int handle);
 
 /*
  函数名称:	DM_SetISOColor
-*函数说明:	设置等温色, 在测温时使用
+*函数说明:	设置等温色，在测温时使用
 *输入参数:  handle：			句柄
 			ColorID： 	等温色号（见颜色索引号）
 *返回值:	等温高度
@@ -850,9 +598,9 @@ int __stdcall DM_GetTempUnit(int handle);
 
 /*
  函数名称:	DM_SetUpTempRange
-*函数说明:	在手动调色标时使用, 用于设置温度上限
+*函数说明:	在手动调色标时使用，用于设置温度上限
 *输入参数:  handle	：句柄
-			Offset ：在原来色标上限的基础上增减,值 -10、-1、+1、+10 之间, 单位为度
+			Offset ：在原来色标上限的基础上增减,值 -10、-1、+1、+10 之间，单位为度
 
 *返回值:	
 */
@@ -860,9 +608,9 @@ void __stdcall DM_SetUpTempRange(int handle,int Offset);
 
 /*
  函数名称:	DM_SetDownTempRange
-*函数说明:	在手动调色标时使用, 用于设置温度下限
+*函数说明:	在手动调色标时使用，用于设置温度下限
 *输入参数:  handle	：句柄
-			Offset ：在原来色标上限的基础上增减,值 -10、-1、+1、+10 之间, 单位为度
+			Offset ：在原来色标上限的基础上增减,值 -10、-1、+1、+10 之间，单位为度
 
 *返回值:	
 */
@@ -875,7 +623,7 @@ void __stdcall DM_SetDownTempRange(int handle,int Offset);
 
 /*
  函数名称:	DM_SetMeasureClass
-*函数说明:	设置测温档位, 具体支持档位详见镜头说明
+*函数说明:	设置测温档位，具体支持档位详见镜头说明
 *输入参数:  handle：		句柄
 			ParamValue ： 档位 （1-8）
 
@@ -896,7 +644,7 @@ int __stdcall DM_GetMeasureClass(int handle);
 *函数说明:	设置参考温度类型
 *输入参数:  handle：		句柄
 			ParamValue ： 0、关闭   
-			1、	参考温度, 值由DM_SetRefeTemp设置   
+			1、	参考温度，值由DM_SetRefeTemp设置   
 			2 - 5 ：对应 点1--4 温度
 			6 - 8 ： 对应 区域 1-3温度
 
@@ -934,7 +682,7 @@ int __stdcall DM_GetRefeTemp (int handle);
 
 /*
  函数名称:	DM_SetAmbientTemp
-*函数说明:	环境温度设置, 当外界环境温度与设置值相差超过5时, 需要重新设定环境温度
+*函数说明:	环境温度设置，当外界环境温度与设置值相差超过5时，需要重新设定环境温度
 *输入参数:  
 			handle：		句柄
 			Temper：  	温度 * 100
@@ -953,7 +701,7 @@ int __stdcall DM_GetAmbientTemp(int handle);
 
 /*
  函数名称:	DM_SetObjDistance
-*函数说明:	设置环境距离, 当图像目标与仪器的距离与设置值相差5m 以上时, 需要重新设定环境距离
+*函数说明:	设置环境距离，当图像目标与仪器的距离与设置值相差5m 以上时，需要重新设定环境距离
 *输入参数:  
 			handle：		句柄
 			Distance：	 	距离 (单位：厘米)
@@ -1035,7 +783,7 @@ int __stdcall DM_GetReviseTemp(int handle);
 
 /*
  函数名称:	DM_OpenAlarm
-*函数说明:	打开仪器端报警功能, 报警信号的输出在消息WM_TEMP_ALARM (0)中处理
+*函数说明:	打开仪器端报警功能，报警信号的输出在消息WM_TEMP_ALARM (0)中处理
 *输入参数:  handle：	句柄
 *返回值:
 **注：		
@@ -1091,7 +839,7 @@ int __stdcall DM_GetAlarmColor(int handle);
 
 /*
  函数名称:	DM_OpenRemoteAlarm
-*函数说明:  打开仪器端报警功能, 报警信号的输出在消息WM_TEMP_ALARM (0)中处理
+*函数说明:  打开仪器端报警功能，报警信号的输出在消息WM_TEMP_ALARM (0)中处理
 *输入参数:  handle：		句柄
 *返回值:	
 */
@@ -1209,7 +957,7 @@ void  __stdcall DM_SetDateTime(int handle,int year,int month,int day,int hour,in
 *函数说明:  获取仪器的当前时间
 *输入参数:  handle		句柄
 			
-*输出参数:  字符串, 格式yyyy-mm-dd hh-mm-ss
+*输出参数:  字符串，格式yyyy-mm-dd hh-mm-ss
 			yyyy		年
 			mm			月
 			dd			日
@@ -1229,7 +977,7 @@ void  __stdcall DM_LoadDefault(int handle);
 
 /*
  函数名称:	DM_GetSystemInfo
-*函数说明:  获取仪器的系统信息, 生成日期和版本号
+*函数说明:  获取仪器的系统信息，生成日期和版本号
 *输入参数:  handle		句柄
 *输出参数：SysInfo		日期和版本号字符串
 *返回值：无
@@ -1243,9 +991,9 @@ void __stdcall  DM_GetSystemInfo(int handle,char *SysInfo);
 
 /*
  函数名称:	DM_PlayerInit
-*函数说明:	视频监控前的初始化。每套系统, 不管开了几个视频监控窗口, 本函数只能调用一次
-*输入参数:  hwnd, 视频显示窗口句柄
-*返回值:	=0  正确, 用DM_PlayerCleanup释放；
+*函数说明:	视频监控前的初始化。每套系统，不管开了几个视频监控窗口，本函数只能调用一次
+*输入参数:  hwnd，视频显示窗口句柄
+*返回值:	=0  正确，用DM_PlayerCleanup释放；
 			<0  错误
 */
 int __stdcall  DM_PlayerInit(HWND hwnd);
@@ -1257,19 +1005,19 @@ int __stdcall  DM_PlayerInit(HWND hwnd);
 			hwnd：　	视频显示窗口句柄
 			ip ：  		仪器IP地址   
 			port ：  		端口
-			channel ：  	通道号, 目前只支持一个通道
+			channel ：  	通道号，目前只支持一个通道
 
-*返回值:	>=0 连接成功，视频监控句柄通过 WM_DM_PLAYER 消息的 wParam 返回
+*返回值:	>=0 连接句柄
 			<0 连接失败
 */
-//预留, netsdk暂时不提供此接口
+//预留，netsdk暂时不提供此接口
 int  __stdcall DM_OpenMonitor(HWND hwnd, char* ip,unsigned short port,int channel= 0);
 
 /*
  函数名称:	DM_SetOSD
 *函数说明:	设置视频的OSD
 *输入参数:  
-			handle：　	WM_DM_PLAYER 消息的 wParam 返回的句柄	
+			handle：　	DM_OpenMonitor返回的连接句柄	
 			OSDType :   	0X00 无
 			0X01 主机时间
 			0X02 码流速率
@@ -1286,7 +1034,7 @@ int __stdcall DM_SetOSD(int handle,int OSDType);
  函数名称:	DM_CloseMonitor
 *函数说明:	关闭视频监控
 *输入参数:  
-			handle：　WM_DM_PLAYER 消息的 wParam 返回的句柄
+			handle：　DM_OpenMonitor返回的连接句柄
  *返回值:	>0 成功 
 			<0 失败
 */
@@ -1294,7 +1042,7 @@ int  __stdcall DM_CloseMonitor(int handle);
 
 /*
  函数名称:	DM_PlayerCleanup
-*函数说明:	清除int __stdcall DM_PlayerInit配置的资源
+*函数说明:	清除int DM_PlayerInit配置的资源
 *输入参数:  
 *返回值:	>=0 成功 
 			<0 失败
@@ -1305,7 +1053,7 @@ int  __stdcall DM_PlayerCleanup();
  函数名称:	DM_Record
 *函数说明:	开始录像
 *输入参数: 
-            handle：　WM_DM_PLAYER 消息的 wParam 返回的句柄	
+            handle：　DM_OpenMonitor返回的连接句柄	
             path ：   保存文件路径
  
 *返回值:	>=0 成功 
@@ -1316,7 +1064,7 @@ int __stdcall  DM_Record(int handle, char* path);
 /*
 *函数名称:	DM_StopRecord
 *函数说明:	停止录像
-*输入参数:  handle：　	WM_DM_PLAYER 消息的 wParam 返回的句柄 
+*输入参数:  handle：　	DM_OpenMonitor返回的连接句柄 
 *返回值:	>=0 成功 
 			<0 失败
 */
@@ -1325,7 +1073,7 @@ int  __stdcall DM_StopRecord(int handle);
 /*
 *函数名称:	DM_Capture
 *函数说明:	采集一幅图像
-*输入参数:  handle：　	WM_DM_PLAYER 消息的 wParam 返回的句柄
+*输入参数:  handle：　	DM_OpenMonitor返回的连接句柄
 			path ： 	保存文件路径
 
 *返回值:	>=0 成功 
@@ -1468,7 +1216,7 @@ enum DALI_PRESET_DIR {
 *函数说明:  云台初始化设置
 *输入参数:  
 			handle：	句柄
-			Protocol：	云台控制协议（参见DALI_PTZ_PROTOCOL中的定义, 目前支持Pelco_D 和 YAAN）
+			Protocol：	云台控制协议（参见DALI_PTZ_PROTOCOL中的定义，目前支持Pelco_D 和 YAAN）
 			NAddrID：	云台地址
 
 *返回值:
@@ -1517,7 +1265,7 @@ void  __stdcall DM_PTZPreset(int handle, DALI_PRESET_DIR Preset, int nPoint);
 
 /*
 *函数名称:	DM_GetStatus
-*函数说明:  获取仪器工作状态, 具体类型参见 enumTestDeviceStatus
+*函数说明:  获取仪器工作状态，具体类型参见enumTestDeviceStatus
 *输入参数:  handle：		句柄
 *返回值:    DM60的当前状态
 */
@@ -1564,9 +1312,9 @@ int  __stdcall DM_Close(int handle);
 
 
 /*	函数名称: DM_GetRemoteAlarm
- *	函数说明：获取仪器端报警状态, 
+ *	函数说明：获取仪器端报警状态，
  *	输入参数：handle：		句柄
- *	返回值：器端报警状态(0：关闭, 1：打开)
+ *	返回值：器端报警状态(0：关闭，1：打开)
  */
 int  __stdcall DM_GetRemoteAlarm(int handle);
 
@@ -1574,7 +1322,7 @@ int  __stdcall DM_GetRemoteAlarm(int handle);
 /*	函数名称: DM_GetVideoMode
  *	函数说明: 获取图像手动/自动模式
  *	输入参数:handle：		句柄
- *	返回值：模式(0、手动, 1、自动)
+ *	返回值：模式(0、手动，1、自动)
  */
 int  __stdcall DM_GetVideoMode(int handle);
 
@@ -1589,14 +1337,14 @@ void  __stdcall DM_GetMAC(int handle,char *Mac);
 /*	函数名称: DM_GetRemoteLanguage
 *	函数说明：获取仪器的语言
 *	输入参数：handle		句柄
-*	返回值： 仪器的语言(0：英文, 1：中文)
+*	返回值： 仪器的语言(0：英文，1：中文)
  */
 int  __stdcall DM_GetRemoteLanguage(int handle);
 
 /*	函数名称: DM_SetRemoteLanguage
 *	函数说明：设置仪器的语言
 *	输入参数：handle		句柄
-*			  iLanguage    仪器的语言标致（0：英文, 1：中文）
+*			  iLanguage    仪器的语言标致（0：英文，1：中文）
 *	返回值： >=0 成功
  */
 int  __stdcall DM_SetRemoteLanguage(int handle, int iLanguage);
@@ -1624,7 +1372,7 @@ data:		user define, in DM_ReceiveMonitorStream
 */
 typedef int (__stdcall *STREAMCALL)( int handle,int dataType, BYTE *stream, int len, int err, void *cbpara );
 
-void __stdcall DM_GetVersion(char *Version);
+void DM_GetVersion(char *Version);
 
 /*
 Description：	open local alram
@@ -1633,7 +1381,7 @@ handle		Handle
 Return：
 >=0:     Success
 */
-int __stdcall DM_OpenLocalAlarm(int handle);
+int DM_OpenLocalAlarm(int handle);
 
 /*
 Description：	close local alram
@@ -1642,7 +1390,7 @@ handle		Handle
 Return：
 >=0:     Success
 */
-int __stdcall DM_CloseLocalAlarm(int handle);
+int DM_CloseLocalAlarm(int handle);
 
 /*
 Description：	set local alram type
@@ -1652,7 +1400,7 @@ type:		0: Min 1: Max 2: Diff
 Return：
 >=0:     Success
 */
-int __stdcall DM_SetLocalAlarmType(int handle,int type);
+int DM_SetLocalAlarmType(int handle,int type);
 
 /*
 Description：	get local alram type
@@ -1661,7 +1409,7 @@ handle		Handle
 Return:
 0: Min 1: Max 2: Diff
 */
-int __stdcall DM_GetLocalAlarmType(int handle);
+int DM_GetLocalAlarmType(int handle);
 
 /*
 Description：	set local alram mode
@@ -1671,7 +1419,7 @@ mode:		 0: > 1: <
 Return：
 >=0:     Success
 */
-int __stdcall DM_SetLocalAlarmMode(int handle,int mode);
+int DM_SetLocalAlarmMode(int handle,int mode);
 
 /*
 Description：	get local alram mode
@@ -1680,7 +1428,7 @@ handle:		Handle
 Return：
 0: > 1: <
 */
-int __stdcall DM_GetLocalAlarmMode(int handle);
+int DM_GetLocalAlarmMode(int handle);
 
 /*
 Description：	set local alram refe 
@@ -1688,13 +1436,13 @@ Input：
 handle		Handle
 refe：	
 0、Close
-1、	Refe Tempature, value by DM_SetLocalAlarmTemp
+1、	Refe Tempature，value by DM_SetLocalAlarmTemp
 2 - 5 ：spot (1-4) tempature
 6 - 8 ：area (1-3) tempature
 Return：
 >=0:     Success
 */
-int __stdcall DM_SetLocalAlarmRefe(int handle,int refe);
+int DM_SetLocalAlarmRefe(int handle,int refe);
 
 /*
 Description：	get local alram refe
@@ -1702,11 +1450,11 @@ Input：
 handle:		Handle
 Return：
 0、Close
-1、	Refe Tempature, value by DM_SetLocalAlarmTemp
+1、	Refe Tempature，value by DM_SetLocalAlarmTemp
 2 - 5 ：spot (1-4) tempature
 6 - 8 ：area (1-3) tempature
 */
-int __stdcall DM_GetLocalAlarmRefe(int handle);
+int DM_GetLocalAlarmRefe(int handle);
 
 /*
 Description：	set local alram tempature
@@ -1716,7 +1464,7 @@ temp:		tempature
 Return：
 >=0:     Success
 */
-int __stdcall DM_SetLocalAlarmTemp(int handle,float temp);
+int DM_SetLocalAlarmTemp(int handle,float temp);
 
 /*
 Description：	get local alram tempature
@@ -1725,7 +1473,7 @@ handle:		Handle
 Return：
 tempature
 */
-float __stdcall DM_GetLocalAlarmTemp(int handle);
+float DM_GetLocalAlarmTemp(int handle);
 
 /*
 Description：get device system info
@@ -1736,7 +1484,7 @@ SysInfo:	see tagSystemInfo
 Return：
 >=0:    Success
 */
-void __stdcall DM_GetSysInfo(int handle,tagSystemInfo *SysInfo);
+void DM_GetSysInfo(int handle,tagSystemInfo *SysInfo);
 
 /*
 input:
@@ -1748,7 +1496,7 @@ data:		uer data, STREAMCALL paramter
 Return:
 =0: success 1:fail
 */
-int __stdcall DM_ReceiveMonitorStream(char* ip, unsigned short port,int channel, STREAMCALL callback ,void *data );
+int DM_ReceiveMonitorStream(char* ip, unsigned short port,int channel, STREAMCALL callback ,void *data );
 
 /*
 Input:	
@@ -1756,13 +1504,12 @@ handle:	  by DLDVR_ReceiveMonitorStream return
 Return:
 =0: success <0: fail
 */
-int __stdcall DM_StopMonitorStream(int handle);
+int DM_StopMonitorStream(int handle);
 
 //下面几个接口尚未实现--------------------------------------------------------begin
-//hWnd: WM_DM_PLAYER 消息的 wParam 返回的句柄
-int __stdcall DM_OpenMonitorEX(HWND hWnd, int frameRate, int fmt, int rl);
-int __stdcall DM_SetStreamBuf(int handle, BYTE *buf, int len);
-int __stdcall DM_EmptyStreamBuf(int handle);
+int DM_OpenMonitorEX(HWND hWnd, int frameRate, int fmt, int rl);
+int DM_SetStreamBuf(int handle, BYTE *buf, int len);
+int DM_EmptyStreamBuf(int handle);
 //上面几个接口尚未实现--------------------------------------------------------end
 
 /*
@@ -1774,7 +1521,7 @@ len		command Len
 Return：
 >=0:     Success
 */	
-int __stdcall DM_YTControl(int handle,char *cmd, int len);
+int DM_YTControl(int handle,char *cmd, int len);
 
 //tempature struct
 struct stTempDest
@@ -1794,7 +1541,7 @@ pFun：			CallBack function
 Return：
 NULL
 */
-void __stdcall DM_GetRealTempObject(int handle, int(__stdcall *pFun)(int ,stTempDest[], int));
+void DM_GetRealTempObject(int handle, int(__stdcall *pFun)(int ,stTempDest[], int));
 
 /*
 Description：	enable natural termpature range
@@ -1804,7 +1551,7 @@ iEnable：		0: disable 1: enable
 Return：
 >=0:     Success
 */
-int __stdcall DM_SetNaturalTempRangeEnable(int handle, int iEnable);
+int DM_SetNaturalTempRangeEnable(int handle, int iEnable);
 
 /*
 Description：	get natural termpature range status
@@ -1813,18 +1560,18 @@ handle：		Handle
 Return：
 0: disable 1: enable
 */
-int __stdcall DM_GetNaturalTempRangeEnable(int handle);
+int DM_GetNaturalTempRangeEnable(int handle);
 
 /*
 Description：	set termpature range
 Input：
 handle：	Handle
-HighTemp：	High tempature * 100
+HeightTemp：Height tempature * 100
 LowTemp:	Low Tempature * 100
 Return：
 >=0:     Success
 */
-int __stdcall DM_SetNaturalTempRange(int handle, int LowTemp, int HighTemp);
+int DM_SetNaturalTempRange(int handle, double HeightTemp, double LowTemp);
 
 /*
 Description：	get termpature range
@@ -1832,10 +1579,8 @@ Input：
 handle：	Handle
 Return：
 >=0:     Success
-HighTemp：	High tempature * 100
-LowTemp:	Low Tempature * 100
 */
-int __stdcall DM_GetNaturalTempRange(int handle, int *LowTemp, int *HighTemp);
+int DM_GetNaturalTempRange(int handle);
 
 /*
 Description：	enable intellect Measure Tempature
@@ -1845,7 +1590,7 @@ nIntellect:	0: diable 1: enbale
 Return：
 >=0:     Success
 */
-int __stdcall DM_SetIntellectMeasureTemp(int handle,int nIntellect);
+int DM_SetIntellectMeasureTemp(int handle,int nIntellect);
 
 /*
 Description：	get intelleect measure tempature
@@ -1854,23 +1599,28 @@ handle：	Handle
 Return：
 >=0:     Success
 */
-int __stdcall DM_GetIntellectMeasureTemp(int handle);
+int DM_GetIntellectMeasureTemp(int handle);
 
 /*
 Description：	set Black Board Paramter
 Input：
 handle：		Handle
-nStartX:		LeftUp X value
-nStartY:		LeftUp Y value
-nEndX:			RightDown X value
-nEndY:			RightDown Y value
+nOutStartX:		LeftUp X value
+nOutStartY:		LeftUp Y value
+nOutHeight:		Height
+nOutWidth:		Width
+nInStartX:		LeftUp X value
+nInStartY:		LeftUp Y value
+nInHeight:		Height
+nInWidth:		width
 dblBlackTemp:	BlackBoard tempature * 100
-dblBlackEmiss:	Emiss * 100
+dblBlackEmiss:	Emiss
 Return：
 >=0:     Success
 */
-int __stdcall DM_SetBlackBoardPara(int handle,int nStartX, int nStartY, int nEndX, int nEndY, 
-						 int dblBlackTemp, int dblBlackEmiss);
+int DM_SetBlackBoardPara(int handle,int nOutStartX, int nOutStartY, int nOutHeight, int nOutWidth,
+						 int nInStartX,int nInStartY,int nInHeight, int nInWidth,
+						 double dblBlackTemp,double dblBlackEmiss);
 
 /*
 Description：	Get Black Board Paramter
@@ -1878,26 +1628,19 @@ Input：
 	handle：	Handle
 Return：
 	>=0:     Success
-	nStartX:		LeftUp X value
-	nStartY:		LeftUp Y value
-	nEndX:			RightDown X value
-	nEndY:			RightDown Y value
-	dblBlackTemp:	BlackBoard tempature * 100
-	dblBlackEmiss:	Emiss * 100
 */
-int __stdcall DM_GetBlackBoardPara(int handle, int *nStartX, int *nStartY, int *nEndX, int *nEndY, 
-						 int *dblBlackTemp, int *dblBlackEmiss);
+int DM_GetBlackBoardPara(int handle);
 
 /*
 Description：	set intellect tempature range
 Input：
 handle：	Handle
-HighTemp:	High tempature * 100
+HeightTemp:	Height tempature * 100
 nLowerTemp:	Lower Tempature * 100
 Return：
 >=0:     Success
 */
-int __stdcall DM_SetIntellectTempRange(int handle,int HighTemp, int nLowerTemp);
+int DM_SetIntellectTempRange(int handle,double HeightTemp, double nLowerTemp);
 
 /*
 Description：	Get Intellect Tempature Range
@@ -1906,55 +1649,42 @@ handle：	Handle
 Return：
 >=0:     Success
 */
-int __stdcall DM_GetIntellectTempRange(int handle);
+int DM_GetIntellectTempRange(int handle);
 
 /*
-Description：	set shield Region
+Description：	set shield area
 Input：
 handle：	Handle
 nID:		Area ID
 nStatus:	0: disable 1: enable
 nStartX,nStartY:	coordinate Leftup 
-nEndX,nEndY:		coordinate RightDown 
+nWidth:		Width
+nHeight:	Height
 Return：
 >=0:     Success
 */
-int __stdcall DM_SetShieldRegion(int handle, int nID, int nStatus, int nStartX, int nStartY, int nEndX, int nEndY);
+int DM_SetShieldArea(int handle,int nID,int nStatus, int nStartX,int nStartY, int nWidth,int nHeight);
 
 /*
-Description：	Get Shield Region
+Description：	Get Shield Area
 Input：
 handle：	Handle
 nID:		Area ID
 Return：
 >=0:     Success
-nStatus:	0: disable 1: enable
-nStartX,nStartY:	coordinate Leftup 
-nEndX,nEndY:		coordinate RightDown 
 */
-int __stdcall DM_GetShieldRegion(int handle,int nID, int *nStatus, int *nStartX, int *nStartY, int *nEndX, int *nEndY);
-
-/*
-Description：	Get All Shield Region
-Input：
-handle：	Handle
-nCount:		Area Count
-Return：
->=0:     Success
-pShieldRegion:	All shield region info
-*/
-int __stdcall DM_GetShieldRegionAll(int handle, int *nCount, tagShieldRegion pShieldRegion[]);
+int DM_GetShieldArea(int handle,int nID);
 
 /*
 Description：	set pallette range
 Input：
 handle：		Handle
-nHighTemp:		the upper tempature * 100
+nHeightTemp:	the upper tempature * 100
 nLowTemp:		the lower tempature * 100
 Return：
 >=0:     Success
 */
-int __stdcall DM_SetPalletteTempRange(int handle, int HighTemp, int nLowerTemp);
+int DM_SetPalletteTempRange(int handle,double nHeightTemp,double nLowerTemp);
 
 /*
 Description：	get pallette range
@@ -1963,7 +1693,7 @@ handle：	Handle
 Return：
 >=0:     Success
 */
-int __stdcall DM_GetPalletteTempRange(int handle);
+int DM_GetPalletteTempRange(int handle);
 
 /*
 Description：	enable auto ambient tempature 
@@ -1973,7 +1703,7 @@ nStatus:	0: disable 1: enable
 Return：
 >=0:     Success
 */
-int __stdcall DM_SetAutoAmbientTemp(int handle,int nStatus);
+int DM_SetAutoAmbientTemp(int handle,int nStatus);
 
 /*
 Description：	enable auto ambient tempature 
@@ -1983,24 +1713,24 @@ nStatus:	0: disable 1: enable
 Return：
 >=0:     Success
 */
-int __stdcall DM_GetAutoAmbientTempStatus(int handle);
+int DM_GetAutoAmbientTempStatus(int handle);
 
 //Test funciton,dont use 
-int __stdcall DM_Test(int handle, unsigned char *Test,int nLen);
+int DM_Test(int handle, unsigned char *Test,int nLen);
 
 /**
 @breif Open Active Test
 @param handle : Handle
 @retval >0 success
 */
-int __stdcall DM_OpenActiveTest(int handle);
+int DM_OpenActiveTest(int handle);
 
 /**
 @breif Close Active Test
 @param handle : Handle
 @retval >0 success
 */
-int __stdcall DM_CloseActiveTest(int handle);
+int DM_CloseActiveTest(int handle);
 
 /**
 @breif Get Lens ID
@@ -2008,7 +1738,7 @@ int __stdcall DM_CloseActiveTest(int handle);
 @return return lens id
 @retval >0 Lens ID
 */
-int __stdcall DM_GetLensID(int handle);
+int DM_GetLensID(int handle);
 
 /**
 @breif Set Lens ID
@@ -2017,25 +1747,25 @@ int __stdcall DM_GetLensID(int handle);
 @return return lens id
 @retval >0 Lens ID
 */
-int __stdcall DM_SetLensID(int handle,int ParamValue);
+int DM_SetLensID(int handle,int ParamValue);
 
-int __stdcall DM_GetTempLimit( int handle );
+int DM_GetTempLimit( int handle );
 
-int __stdcall DM_SetTempLimit( int handle, int HighTemp );
+int DM_SetTempLimit( int handle, int HeightTemp );
 
-int __stdcall DM_SetEdgeradiiEnable( int handle, bool Enable );
-bool __stdcall DM_GetEdgeradiiEnable( int handle );
+int DM_SetEdgeradiiEnable( int handle, bool Enable );
+bool DM_GetEdgeradiiEnable( int handle );
 
-int __stdcall DM_SetEdgeradii( int handle, int Edgeradii );
+int DM_SetEdgeradii( int handle, int Edgeradii );
 
-int __stdcall DM_GetEdgeradii( int handle );
+int DM_GetEdgeradii( int handle );
 
 /*
  函数名称:	DM_CheckOnline
 *函数说明:	检测主机是否在线
 *输入参数:  IPAddr：主机IP
 			Port：主机端口 
-*返回值:正数表示在线, 负数表示不在线			
+*返回值:正数表示在线，负数表示不在线			
 */
 int  __stdcall DM_CheckOnline( char *IPAddr, int Port);
 
@@ -2043,7 +1773,7 @@ int  __stdcall DM_CheckOnline( char *IPAddr, int Port);
  函数名称:	DM_ClearAllJpeg
 *函数说明:	清除主机上的所有JPEG图片
 *输入参数:  handle
-*返回值:正数表示成功, 负数表示失败		
+*返回值:正数表示成功，负数表示失败		
 */
 int  __stdcall DM_ClearAllJpeg(int handle);
 
@@ -2051,8 +1781,8 @@ int  __stdcall DM_ClearAllJpeg(int handle);
  函数名称:	DM_BrightAdjust
 *函数说明:	亮度调节
 *输入参数:  handle
-*           step,步长, +1, 表示增加1,  -1, 表示减小1
-*返回值:正数表示成功, 负数表示失败		
+*           step,步长，+1, 表示增加1， -1, 表示减小1
+*返回值:正数表示成功，负数表示失败		
 */
 int  __stdcall DM_BrightAdjust(int handle, int step);
 
@@ -2060,8 +1790,8 @@ int  __stdcall DM_BrightAdjust(int handle, int step);
  函数名称:	DM_ContrastAdjust
 *函数说明:	增益调节
 *输入参数:  handle
-*           step,步长, +1, 表示增加1,  -1, 表示减小1
-*返回值:正数表示成功, 负数表示失败		
+*           step,步长，+1, 表示增加1， -1, 表示减小1
+*返回值:正数表示成功，负数表示失败		
 */
 int  __stdcall DM_ContrastAdjust(int handle, int step);
 
@@ -2069,7 +1799,7 @@ int  __stdcall DM_ContrastAdjust(int handle, int step);
  函数名称:	DM_RemoteJpeg
 *函数说明:	远程拍照
 *输入参数:  handle
-*返回值:正数表示成功, 负数表示失败		
+*返回值:正数表示成功，负数表示失败		
 */
 int  __stdcall DM_RemoteJpeg(int handle);
 
@@ -2077,8 +1807,8 @@ int  __stdcall DM_RemoteJpeg(int handle);
 函数名称:	DM_Zoom
 *函数说明:	电子放大
 *输入参数:  handle
-*			value, 放大倍数。0-1倍； 1-2倍
-*返回值:正数表示成功, 负数表示失败		
+*			value，放大倍数。0-1倍； 1-2倍
+*返回值:正数表示成功，负数表示失败		
 */
 int  __stdcall DM_Zoom(int handle, int value);
 
@@ -2087,8 +1817,8 @@ int  __stdcall DM_Zoom(int handle, int value);
 函数名称:	DM_SetPalority
 *函数说明:	设置热图像模式
 *输入参数:  handle
-*			value, 1-白热； 0-黑热
-*返回值:正数表示成功, 负数表示失败		
+*			value，1-白热； 0-黑热
+*返回值:正数表示成功，负数表示失败		
 */
 int  __stdcall DM_SetPalority(int handle, int value);
 
@@ -2096,7 +1826,7 @@ int  __stdcall DM_SetPalority(int handle, int value);
 函数名称:	DM_GetCapacity
 *函数说明:	获取S730机型的容量
 *输入参数:  handle
-*返回值:容量值, 若返回负数表示失败		
+*返回值:容量值，若返回负数表示失败		
 */
 int  __stdcall DM_GetCapacity(int handle);
 
@@ -2104,7 +1834,7 @@ int  __stdcall DM_GetCapacity(int handle);
 函数名称:	DM_GetBright
 *函数说明:	获取S730机型的亮度值
 *输入参数:  handle
-*返回值:亮度值, 范围在-2048-2048, 返回其它值为失败		
+*返回值:亮度值，范围在-2048-2048，返回其它值为失败		
 */
 int  __stdcall DM_GetBright(int handle);
 
@@ -2112,7 +1842,7 @@ int  __stdcall DM_GetBright(int handle);
 函数名称:	DM_GetContrast
 *函数说明:	获取S730机型的对比度
 *输入参数:  handle
-*返回值:对比度, 范围在0-255, 返回其它值为失败		
+*返回值:对比度，范围在0-255，返回其它值为失败		
 */
 int  __stdcall DM_GetContrast(int handle);
 
@@ -2146,8 +1876,8 @@ int  __stdcall DM_GetGFZ(int handle);
  函数名称:	DM_SetEIS
 *函数说明:	打开/关闭集成电子稳像功能
 *输入参数:  handle
-*           cmd,  1-打开   0-关闭
-*返回值:正数表示成功, 负数表示失败		
+*           cmd， 1-打开   0-关闭
+*返回值:正数表示成功，负数表示失败		
 */
 int  __stdcall DM_SetEIS(int handle, int cmd);
 
@@ -2156,8 +1886,8 @@ int  __stdcall DM_SetEIS(int handle, int cmd);
 *函数说明:  激光测距
 *输入参数:  handle		句柄			
 *输出参数:  status,仪器状态 0-准备好  1-正常测距  2-开机自检
-*			distance, 距离, status=1时有效
-*返回值:正数表示成功, 负数表示失败	
+*			distance，距离，status=1时有效
+*返回值:正数表示成功，负数表示失败	
 */
 int  __stdcall DM_GetDistance(int handle, int &status, tagDistanceInfo *distance);
 
@@ -2171,9 +1901,9 @@ typedef void(CALLBACK *fYUVDataCallBack) (int handle, unsigned long dwFrameRate,
 										  unsigned long nWidth, unsigned long nHeight, int err, unsigned long dwUser);
 
 /* 	功能说明:设置用于YUV视频回调的回调函数
-*	输入参数: lRealHandle, 监视句柄, 即WM_DM_PLAYER 消息的 wParam 返回的句柄
-yuvDataCallBack, 回调函数, 用于回调YUV数据
-dwUser, 用户自定义数据
+*	输入参数: lRealHandle，监视句柄，即DM_OpenMonitor()的返回值
+yuvDataCallBack，回调函数，用于回调YUV数据
+dwUser，用户自定义数据
 *	输出参数: 无
 *	函数返回: TRUE：成功； FALSE：失败
 *	说明:
@@ -2185,7 +1915,7 @@ bool  __stdcall  DM_SetYUVDataCallBack(int lRealHandle, fYUVDataCallBack yuvData
 *函数说明:  激光测距自检
 *输入参数:  handle		句柄			
 *输出参数:  无
-*返回值:正数表示成功, 负数表示失败	
+*返回值:正数表示成功，负数表示失败	
 */
 int  __stdcall DM_AutoCheck(int handle);
 
@@ -2193,32 +1923,75 @@ int  __stdcall DM_AutoCheck(int handle);
 /*
  函数名称:	DM_VideoStable
 *函数说明:  打开/关闭电子稳像处理
-*输入参数:  lRealHandle, 监视句柄, 即WM_DM_PLAYER 消息的 wParam 返回的句柄
-*			cmd, 1-打开电子稳像 0-关闭电子稳像			
+*输入参数:  lRealHandle，监视句柄，即DM_OpenMonitor()的返回值
+*			cmd，1-打开电子稳像 0-关闭电子稳像			
 *输出参数:  无
-*返回值:正数表示成功, 负数表示失败	
+*返回值:正数表示成功，负数表示失败	
 */
 int  __stdcall DM_VideoStable(int lRealHandle, int cmd);
 
 /*
  函数名称:	DM_SetGFZStatus
 *函数说明:  打开/关闭图像冻结
-*输入参数:  lRealHandle, 监视句柄, 即WM_DM_PLAYER 消息的 wParam 返回的句柄
-*			cmd, 1-图像冻结 0-解除冻结			
+*输入参数:  lRealHandle，监视句柄，即DM_OpenMonitor()的返回值
+*			cmd，1-图像冻结 0-解除冻结			
 *输出参数:  无
-*返回值:正数表示成功, 负数表示失败	
+*返回值:正数表示成功，负数表示失败	
 */
 int  __stdcall DM_SetGFZStatus(int lRealHandle, int cmd);
 
 BOOL __stdcall DM_SetTemperatureScope(int handle,  int dwValue1,int dwValue2);
 BOOL __stdcall DM_GetTemperatureScope(int handle, int* dwValue1, int* dwValue2);
 
+#define		INFRA_DATA	0	//红外原始数据
+#define		INFRA_PARA	 1 //红外参数
+#define		INFRA_DATA_HEADER	2	//数据头,对应结构DLVParagraph
+#define		INFRA_PARA_HEADER	 3 //文件头,对应结构DLVFileHeader
+
+//DLV 文件头
+struct DLVFileHeader
+{
+    int   nFileVer; //3
+    int   nFrameTime;
+    int   nWidth;  //edit by duke 2009.10.21 type error
+    int   nHeight;
+};
+
+//帧头格式：
+struct DLVParagraph
+{
+    unsigned int SyncFlag;        //0x66DDDD66
+    unsigned int nTime;           //当前时间
+    unsigned int nPriorLength;    //上一帧长度
+    unsigned int nType;           //帧类型
+    unsigned int nCurrentLength;  //本帧长度
+};
+typedef void(CALLBACK *fInfraDataCallBack) (long lHandle, unsigned long dwDataType, unsigned char *pBuffer, unsigned long dwBufSize);
+/*
+ 函数名称:	DM_RecvInfraredData
+*函数说明:  打开红外原始数据的回调
+*输入参数:  lUserID，句柄
+*			InfraDataCallback，回调函数		
+*输出参数:  无
+*返回值:正数表示成功，负数表示失败	
+*/
+long __stdcall DM_RecvInfraredData(long lUserID, fInfraDataCallBack InfraDataCallback);
+
+/*
+ 函数名称:	DM_StopRecvInfraredData
+*函数说明:  停止红外原始数据的回调
+*输入参数:  lRealHandle，句柄，即DM_RecvInfraredData()或DM_RecvInfraredData_EX()的返回值	
+*输出参数:  
+*返回值:TRUE表示成功，FALSE表示失败	
+*/
+int __stdcall DM_StopRecvInfraredData(long lRealHandle);
+
 /*
  函数名称:	DM_GetIPAddress
 *函数说明:  获取IP地址
 *输入参数: handle：	句柄			
-*输出参数:  IPAddress, IP地址
-*返回值:TRUE表示成功, FALSE表示失败	
+*输出参数:  IPAddress，IP地址
+*返回值:TRUE表示成功，FALSE表示失败	
 */
 int __stdcall DM_GetIPAddress(int handle,char *IPAddress);
 
@@ -2226,8 +1999,8 @@ int __stdcall DM_GetIPAddress(int handle,char *IPAddress);
  函数名称:	DM_GetNetmask
 *函数说明:  获取子网掩码
 *输入参数: handle：	句柄			
-*输出参数:  Netmask, 子网掩码
-*返回值:TRUE表示成功, FALSE表示失败	
+*输出参数:  Netmask，子网掩码
+*返回值:TRUE表示成功，FALSE表示失败	
 */
 int __stdcall DM_GetNetmask(int handle,char *Netmask);
 
@@ -2235,8 +2008,8 @@ int __stdcall DM_GetNetmask(int handle,char *Netmask);
  函数名称:	DM_GetGateway
 *函数说明:  获取网关
 *输入参数: handle：	句柄			
-*输出参数:  Gateway, 网关
-*返回值:TRUE表示成功, FALSE表示失败	
+*输出参数:  Gateway，网关
+*返回值:TRUE表示成功，FALSE表示失败	
 */
 int __stdcall DM_GetGateway(int handle,char *Gateway);
 
@@ -2244,126 +2017,41 @@ int __stdcall DM_GetGateway(int handle,char *Gateway);
 void __stdcall DM_SetAllMessCallBack(void (CALLBACK *fMessCallBack)(int msg, char *pBuf, int dwBufLen, DWORD dwUser),  DWORD dwUser = 0);
 
 /*
+ 函数名称:	DM_RecvInfraredData
+*函数说明:  打开红外原始数据的回调
+*输入参数:  lUserID，句柄
+*			Frame，采集的总帧数
+*			Time,两帧的时间间隔，单位毫秒
+*			InfraDataCallback，回调函数		
+*输出参数:  无
+*返回值:正数表示成功，负数表示失败	
+*/
+LONG __stdcall DM_RecvInfraredData_EX(LONG lUserID, int Frame,int Time, fInfraDataCallBack InfraDataCallback);
+
+/*
  函数名称:	DM_GetDM6xResolution
 *函数说明:  获取DM6x机型的主机分辨率
 *输入参数:  handle		句柄			
 *输出参数:  resolution,主机分辨率
-*返回值:>=0表示成功, 负数表示失败	
+*返回值:>=0表示成功，负数表示失败	
 */
 int  __stdcall DM_GetDM6xResolution(int handle, tagResolutionInfo *resolution);
+
 
 /*
  函数名称:	DM_ControlServoMotor
 *函数说明:	控制舵机
 *输入参数:  handle：		句柄
-			int value: 		舵机目标状态（0：表示拉起, 1：表示挡下）
-*返回值:正数表示成功, 负数表示失败		
+			int value: 		舵机目标状态（0：表示拉起，1：表示挡下）
+*返回值:正数表示成功，负数表示失败		
 */
 int  __stdcall DM_ControlServoMotor(int handle, int value);
 
 //以下3个接口尚未实现
-int __stdcall DM_OpenIfrVideo(HWND hwnd,  char* ip, unsigned short port, int( __stdcall  *pFun)(char *, int));
-int __stdcall DM_SaveIfr( char *strFileName );
-int __stdcall DM_StopIfr();
-
-/*
- 函数名称:	DM_ShowMenu
-*函数说明:	显示调试菜单
-			仅对 DM6x 二期或以后的有效
-*输入参数:  handle：		句柄
-*返回值:	>0 成功, <0失败		
-*/
-int __stdcall DM_ShowMenu(int handle);
-
-/*
- 函数名称:	DM_GetDeviceVer
-*函数说明:	获取DM60大版本号
-*输入参数:  handle		句柄
-*返回值:    当前DM60大版本号		
-*/
-int  __stdcall DM_GetDeviceVer(int handle);
-
-/*
-Description：	Ajust tempature 
-Input：
-handle：	Handle
-nStatus:	0: Manual 1: Auto
-nTemp:		Tempature * 100
-Return：
->=0:     Success
-*/
-int __stdcall DM_SetAjustTemp(int handle, int nStatus, int nTemp);
-
-/*
-Description：	Ajust Position 
-Input：
-handle：	Handle
-nStatus:	0: DisEnable 1: Enable
-IPCPos1X, IPCPos1Y:		CCD coordinate LeftUp
-IPCPos2X, IPCPos2Y:		CCD coordinate RightDown
-DMPos1X, DMPos1Y:		IR coordinate LeftUp
-DMPos2X, DMPos2Y:		IR coordinate RightDown
-Return：
->=0:     Success
-*/
-int __stdcall DM_SetAjustPosition(int handle, int nStatus, int IPCResolution, 
-						int IPCPos1X, int IPCPos1Y, int IPCPos2X, int IPCPos2Y,
-						int DMPos1X, int DMPos1Y, int DMPos2X, int DMPos2Y);
-
-int __stdcall DM_SetAlarmSenseRadius(int handle, int nRadius);
-
-int __stdcall DM_SetAlarmRadius(int handle, int nRadius);
-
-int __stdcall DM_SetAlarmTime(int handle, int nTime);
-
-int __stdcall DM_SetTimeOSD(int handle, int nStatus, int StartX, int StartY, int Size = 1);
-
-int __stdcall DM_GetAjustTemp(int handle, int *nStatus, int *nTemp);
-
-int __stdcall DM_GetAjustPosition(int handle, int *nStatus, int *IPCResolution, 
-						int *IPCPos1X, int *IPCPos1Y, int *IPCPos2X, int *IPCPos2Y,
-						int *DMPos1X, int *DMPos1Y, int *DMPos2X, int *DMPos2Y);
-/*
-return:
-	>=0 时间
-	<0 失败
-*/
-int __stdcall DM_GetAlarmTime(int handle);
-int __stdcall DM_GetTimeOSD(int handle, int *nStatus, int *StartX, int *StartY, int *Size);
-
-int __stdcall DM_GetPointTemp(int handle, int X, int Y, int *nTemp);
-
-int __stdcall DM_RemoteUpdate(int handle, char* path); //Net Software
-
-int __stdcall DM_UpdateConfig(int handle, char* path); //Net Software Config
-													   /*
-Type:
-	#define UPDATEFILE_TYPE_DM60_MID		0
-	#define UPDATEFILE_TYPE_DM60_FIREWARE	1
-	#define UPDATEFILE_TYPE_DM60_DATA		2
-*/
-int __stdcall DM_UpdateDM60File(int handle, char* path, int Type); //Main Software
-
-int __stdcall DM_DownloadMTC(int handle, char* path); //Download MTC
-
-//hwnd: WM_DM_PLAYER 消息的 wParam 返回的句柄
-int  __stdcall DM_OpenMonitor_Jpeg(HWND hwnd, char* ip, unsigned short port, int channel= 0); //JPEG Mode
-
-int  __stdcall DM_CloseMonitor_Jpeg(int handle); //JPEG Mode
-
-typedef void(CALLBACK *fTempAlarmCallBack) (unsigned char *pBuffer, unsigned long dwBufSize);//long lHandle, 
-
-long __stdcall DM_TempAlarm(LONG handle, fTempAlarmCallBack TempAlarmCallBack);
-
-//接收报警图片
-int __stdcall  DM_ReceiveAlarmJpeg(int handle, char *Path);
-
-int  __stdcall DM_GetUpgradePos(int handle);
-
-bool __stdcall  DM_GetMeasureString(int handle, int type, int index, char* DMMeasureBuf);
-
-int __stdcall  DM_SetTCPPort(int handle, int port);
-int __stdcall  DM_SetUDPPort(int handle, int port);
-int __stdcall  DM_SetListenPort(int handle, int port);
+int DM_OpenIfrVideo(HWND hwnd,  char* ip, unsigned short port, int( __stdcall  *pFun)(char *, int));
+int DM_SaveIfr( char *strFileName );
+int DM_StopIfr();
 //--------------------------------------------------------
+}
+
 #endif
