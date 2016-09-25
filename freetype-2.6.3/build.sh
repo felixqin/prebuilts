@@ -1,17 +1,23 @@
 
-BUILD_PLATFORM=android15armeabiv7aneon
+cd `dirname $0`
 
-THISDIR=`dirname $0`
 
-source ${THISDIR}/module.env
+TOPDIR=`pwd`/../../
+
+source module.env
+source ${TOPDIR}/xbuild/env/tools.env
+
+
+TOOLCHAIN=`listtoolchain ${TOPDIR}`
+[ x${TOOLCHAIN} = x"" ] && exit 1
 
 
 echo "build start ..."
 
 echo "-------------------------------"
-if [ ! -f ${THISDIR}/${MODULE_PACKAGE} ]; then
+if [ ! -f ${MODULE_PACKAGE} ]; then
 	echo "downloading ..."
-	curl "${MODULE_URL}" > ${THISDIR}/${MODULE_PACKAGE} || exit 3
+	curl "${MODULE_URL}" > ${MODULE_PACKAGE} || exit 3
 fi
 
 echo "-------------------------------"
@@ -20,29 +26,14 @@ if [ ! -d ${THISDIR}/${MODULE_SRCPATH} ]; then
 	tar jxvf ${MODULE_PACKAGE}
 fi
 
-cd ${THISDIR}/${MODULE_SRCPATH}
-
-echo "-------------------------------"
-echo "configure ..."
-./configure --prefix=`pwd`/../tmp-bin/	\
-	--enable-shared
-
 echo "-------------------------------"
 echo "making ..."
-make -j4 || exit 1
+export TOPDIR TOOLCHAIN
+make || exit 1
 make install || exit 2
 
 
-echo "-------------------------------"
-cd ..
-echo "install platform files ..."
-
-mkdir -p include
-mkdir -p lib/${BUILD_PLATFORM}
-cp -dprf tmp-bin/include/freetype2/* include/
-#cp -f tmp-bin/bin/*.dll lib/${BUILD_PLATFORM}/
-#cp -f tmp-bin/bin/*.lib lib/${BUILD_PLATFORM}/
-cp -f tmp-bin/lib/*.a lib/${BUILD_PLATFORM}/
-#cp -f tmp-bin/lib/libfreetype.so.6 lib/${BUILD_PLATFORM}/
+echo "==============================="
+echo "build success!"
 
 
