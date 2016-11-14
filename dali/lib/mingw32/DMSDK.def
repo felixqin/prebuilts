@@ -101,7 +101,7 @@ DM_GetRemoteLanguage @95
 DM_GetReviseParam @96
 DM_GetReviseTemp @97
 DM_GetShieldRegion @98
-DM_GetShieldRegionAll @99
+DM_GetShieldRegionAll@12 @99
 DM_GetSpotTemp @100
 DM_GetStatus @101
 DM_GetSysInfo @102
@@ -206,7 +206,7 @@ DM_SetRemoteAlarmTemp @200
 DM_SetRemoteLanguage @201
 DM_SetReviseParam @202
 DM_SetReviseTemp @203
-DM_SetShieldRegion @204
+DM_SetShieldRegion@28 @204
 DM_SetSpot @205
 DM_SetStreamBuf @206
 DM_SetTCPPort @207
