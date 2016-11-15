@@ -42,7 +42,7 @@ DM_DurativeNear @36
 DM_EmptyStreamBuf @37
 DM_FocusFar @38
 DM_FocusNear @39
-DM_GetAjustPosition @40
+DM_GetAjustPosition@44 @40
 DM_GetAjustTemp @41
 DM_GetAlarmColor @42
 DM_GetAlarmInfo @43
@@ -154,7 +154,7 @@ DM_RemoteUpdate @148
 DM_Reset @149
 DM_ResetPresetName @150
 DM_SaveIfr @151
-DM_SetAjustPosition @152
+DM_SetAjustPosition@44 @152
 DM_SetAjustTemp @153
 DM_SetAlarmColor @154
 DM_SetAlarmInfo @155
