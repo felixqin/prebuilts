@@ -112,7 +112,7 @@ DM_GetTempParam @106
 DM_GetTempUnit @107
 DM_GetTempValueOnImageStatus @108
 DM_GetTemperatureScope @109
-DM_GetTimeOSD @110
+DM_GetTimeOSD@20 @110
 DM_GetUpdateMeaTemp @111
 DM_GetUpgradePos @112
 DM_GetVersion @113
@@ -213,7 +213,7 @@ DM_SetTCPPort @207
 DM_SetTempLimit @208
 DM_SetTempUnit @209
 DM_SetTemperatureScope @210
-DM_SetTimeOSD @211
+DM_SetTimeOSD@20 @211
 DM_SetUDPPort @212
 DM_SetUpTempRange @213
 DM_SetUpdateMeaTemp @214
