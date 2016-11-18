@@ -58,7 +58,7 @@ DM_GetBlackBoardPara@28 @52
 DM_GetBright @53
 DM_GetCapacity @54
 DM_GetContrast @55
-DM_GetDM6xResolution @56
+DM_GetDM6xResolution@8 @56
 DM_GetDateTime @57
 DM_GetDeviceVer @58
 DM_GetDistance @59
