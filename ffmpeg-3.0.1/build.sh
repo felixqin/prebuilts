@@ -1,9 +1,11 @@
 
-BUILD_PLATFORM=linux64
 
 THISDIR=`dirname $0`
 
 source ${THISDIR}/module.env
+
+
+BUILD_PLATFORM=`${THISDIR}/../build/hostos.sh`
 
 
 echo "build start ..."
@@ -24,6 +26,8 @@ cd ${THISDIR}/${MODULE_SRCPATH}
 
 if [ x"${BUILD_PLATFORM}" = x"mingw32" ]; then
 	PLATFORM_OPTIONS=--disable-asm
+elif [ x"${BUILD_PLATFORM}" = x"macos" ]; then
+	PLATFORM_OPTIONS=--disable-yasm
 fi 
 
 echo "-------------------------------"
@@ -59,11 +63,17 @@ echo "install platform files ..."
 mkdir -p include
 mkdir -p lib/${BUILD_PLATFORM}
 cp -dprf tmp-bin/include/* include/
-cp -f tmp-bin/bin/*.dll lib/${BUILD_PLATFORM}/
-cp -f tmp-bin/bin/*.lib lib/${BUILD_PLATFORM}/
-cp -f tmp-bin/lib/*.a lib/${BUILD_PLATFORM}/
-cp -f tmp-bin/lib/libavformat.so.57 lib/${BUILD_PLATFORM}/
-cp -f tmp-bin/lib/libavcodec.so.57 lib/${BUILD_PLATFORM}/
-cp -f tmp-bin/lib/libavutil.so.55 lib/${BUILD_PLATFORM}/
-
+if [ x"${BUILD_PLATFORM}" = x"mingw32" ]; then
+	cp -f tmp-bin/bin/*.dll lib/${BUILD_PLATFORM}/
+	cp -f tmp-bin/bin/*.lib lib/${BUILD_PLATFORM}/
+	cp -f tmp-bin/lib/*.a lib/${BUILD_PLATFORM}/
+elif [ x"${BUILD_PLATFORM}" = x"linux64" ]; then
+	cp -f tmp-bin/lib/libavformat.so.57 lib/${BUILD_PLATFORM}/
+	cp -f tmp-bin/lib/libavcodec.so.57 lib/${BUILD_PLATFORM}/
+	cp -f tmp-bin/lib/libavutil.so.55 lib/${BUILD_PLATFORM}/
+elif [ x"${BUILD_PLATFORM}" = x"macos" ]; then
+	cp -f tmp-bin/lib/libavformat.dylib lib/${BUILD_PLATFORM}/
+	cp -f tmp-bin/lib/libavcodec.dylib lib/${BUILD_PLATFORM}/
+	cp -f tmp-bin/lib/libavutil.dylib lib/${BUILD_PLATFORM}/
+fi
 
