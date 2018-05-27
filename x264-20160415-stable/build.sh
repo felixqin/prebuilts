@@ -1,7 +1,7 @@
 
-BUILD_PLATFORM=linux64
-
 THISDIR=`dirname $0`
+
+BUILD_PLATFORM=`${THISDIR}/../build/hostos.sh`
 
 source ${THISDIR}/module.env
 
@@ -40,10 +40,11 @@ echo "install platform files ..."
 
 mkdir -p include
 mkdir -p lib/${BUILD_PLATFORM}
-cp -dprf tmp-bin/include/* include/
+cp -prf tmp-bin/include/* include/
 #cp -f tmp-bin/bin/*.dll lib/${BUILD_PLATFORM}/
 #cp -f tmp-bin/bin/*.lib lib/${BUILD_PLATFORM}/
 #cp -f tmp-bin/lib/*.a lib/${BUILD_PLATFORM}/
-cp -f tmp-bin/lib/*.so lib/${BUILD_PLATFORM}/
+#cp -f tmp-bin/lib/*.so lib/${BUILD_PLATFORM}/
+cp tmp-bin/lib/*.dylib lib/${BUILD_PLATFORM}/
 
 
