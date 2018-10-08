@@ -34,6 +34,7 @@ echo "configure ..."
 	--enable-decoder=h264_mmal \
 	|| exit 1
 
+# reference: https://blog.csdn.net/sbdx/article/details/75110126
 
 echo "-------------------------------"
 echo "making ..."
