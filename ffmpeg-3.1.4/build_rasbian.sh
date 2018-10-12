@@ -32,6 +32,7 @@ echo "configure ..."
 	--enable-mmal \
 	--enable-hwaccel=h264_mmal \
 	--enable-decoder=h264_mmal \
+	--enable-decoder=h264	\
 	|| exit 1
 
 # reference: https://blog.csdn.net/sbdx/article/details/75110126
